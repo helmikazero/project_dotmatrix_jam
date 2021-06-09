@@ -108,8 +108,8 @@ bool deAngka [12][15] = {
 };
 
 // CHANGE MODE
-uint8_t changeHoldMax = 10;
-uint8_t changeHold = 10;
+uint8_t changeHoldThreshold = 10;
+uint8_t changeHold = 0;
 bool changeMode = false;
 uint8_t pointerLoc = 0;
 
@@ -171,26 +171,54 @@ void loop(){
     currentButtonState[i] = digitalRead(button_[i]);
   }
 
-  if(lastButtonState[0] == HIGH && currentButtonState[0] == LOW){
-    date = !date;
-    ClearAllDisplay();
-  } 
-
   // if(lastButtonState[1] == HIGH && currentButtonState[1] == LOW){
   //   changeMode = !changeMode;
   // }
 
-  if(digitalRead(button_[1]) == LOW){
+  // if(digitalRead(button_[1]) == LOW){
+  //   lc.setLed(3,0,0,true);
+  //   if(changeHold > 0){
+  //     changeHold--;
+  //   }else{
+  //     changeMode = !changeMode;
+  //     changeHold = changeHoldMax;
+  //   }
+  // }else{
+  //   lc.setLed(3,0,0,false);
+  //   changeHold = changeHoldMax;
+  // }
+
+
+
+  // if(digitalRead(button_[0]) == LOW){
+  //   lc.setLed(3,0,0,true);
+  //   changeHold++;
+  // }else{
+  //   if(changeHold >= changeHoldThreshold){
+  //       changeMode = !changeMode;
+  //   }else if(changeHold > 0 && changeHold < changeHoldThreshold){
+  //     date = !date;
+  //     ClearAllDisplay();
+  //   }
+  //   changeHold = 0;
+  // }
+
+  if(digitalRead(button_[0]) == LOW){
     lc.setLed(3,0,0,true);
-    if(changeHold > 0){
-      changeHold--;
-    }else{
-      changeMode = !changeMode;
-      changeHold = changeHoldMax;
+    changeHold++;
+    if(changeHold >= changeHoldThreshold){
+      printPointerDyna(0,7,32,1,pointerLoc,dePointer);
+      printPointerDyna(0,7,32,1,3,dePointer);
     }
   }else{
-    lc.setLed(3,0,0,false);
-    changeHold = changeHoldMax;
+    lc.setLed(3,0,0,true);
+    if(changeHold >= changeHoldThreshold){
+        changeMode = !changeMode;
+    }else if(changeHold > 0 && changeHold < changeHoldThreshold){
+      date = !date;
+      ClearAllDisplay();
+    }
+    changeHold = 0;
   }
 
   
