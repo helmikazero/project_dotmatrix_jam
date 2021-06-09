@@ -4,6 +4,21 @@
 
 LedControl lc = LedControl(12,11,10,4);
 
+bool dePointer [5][32] = {
+  {
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1
+  },
+  {
+    0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0
+  },
+  {
+    0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+  },
+  {
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+  },
+};
+
 
 bool deAngka [12][15] = {
     {
@@ -92,6 +107,13 @@ bool deAngka [12][15] = {
     }
 };
 
+// CHANGE MODE
+uint8_t changeHoldMax = 10;
+uint8_t changeHold = 10;
+bool changeMode = false;
+uint8_t pointerLoc = 0;
+
+
 //jam
 uint8_t sec = 40; 
 uint8_t minute = 23; 
@@ -101,6 +123,7 @@ uint8_t hour = 22;
 uint8_t day = 9; 
 uint8_t month = 6; 
 uint8_t year = 21;
+
  
 uint8_t flag = 1;
 bool date = false;
@@ -151,12 +174,93 @@ void loop(){
   if(lastButtonState[0] == HIGH && currentButtonState[0] == LOW){
     date = !date;
     ClearAllDisplay();
+  } 
+
+  // if(lastButtonState[1] == HIGH && currentButtonState[1] == LOW){
+  //   changeMode = !changeMode;
+  // }
+
+  if(digitalRead(button_[1]) == LOW){
+    lc.setLed(3,0,0,true);
+    if(changeHold > 0){
+      changeHold--;
+    }else{
+      changeMode = !changeMode;
+      changeHold = changeHoldMax;
+    }
+  }else{
+    lc.setLed(3,0,0,false);
+    changeHold = changeHoldMax;
   }
-  
 
   
+
+  if(changeMode){
+    if(lastButtonState[1] == HIGH && currentButtonState[1] == LOW){
+      pointerLoc++;
+      if(pointerLoc >= 3){
+        pointerLoc = 0;
+      }
+    }
+
+    if(lastButtonState[2] == HIGH && currentButtonState[2] == LOW){
+      switch(pointerLoc){
+        case 0:
+          if(date){
+            year++;
+          }else{
+            sec++;
+          }
+          break;
+        case 1:
+          if(date){
+            month++;
+          }else{
+            minute++;
+          }
+          break;
+        case 2:
+          if(date){
+            day++;
+          }else{
+            hour++;
+          }
+          break;
+      }
+    }
+
+    if(lastButtonState[3] == HIGH && currentButtonState[3] == LOW){
+      switch(pointerLoc){
+        case 0:
+          if(date){
+            year--;
+          }else{
+            sec--;
+          }
+          break;
+        case 1:
+          if(date){
+            month--;
+          }else{
+            minute--;
+          }
+          break;
+        case 2:
+          if(date){
+            day--;
+          }else{
+            hour--;
+          }
+          break;
+      }
+    }
+
+    printPointerDyna(0,7,32,1,pointerLoc,dePointer);
+  }else{
+    printPointerDyna(0,7,32,1,3,dePointer);
+  }
   
-  
+  TimeFlow();
   Time2DigConvert();
 
   
@@ -171,7 +275,9 @@ void loop(){
     lc.setLed(3-(secRate+12)/8,0,(secRate+12)%8,debugBool);
   }else{
     secRate = 7;
-    TimeFlow();
+    sec = sec+1;
+    
+
     debugBool = !debugBool;
     
   }
@@ -208,6 +314,7 @@ void Time2DigConvert(){
 }
 
 
+
 void DisplayDig(uint8_t xl, uint8_t yl, uint8_t digMode[], uint8_t indenForm){
   printKeyDyna(xl,yl,3,5,digMode[0],deAngka);
   printKeyDyna(xl+4,yl,3,5,digMode[1],deAngka); //4
@@ -225,7 +332,7 @@ void DisplayDig(uint8_t xl, uint8_t yl, uint8_t digMode[], uint8_t indenForm){
 
 
 void TimeFlow(){
-  sec = sec+1;
+  
   if(sec>59){
     sec = 0; minute = minute +1;
   }
@@ -342,6 +449,19 @@ void printKeyOffset( int deviceIndex, int xoff, int yoff,int keyIndex, bool keyG
 }
 
 void printKeyDyna(int xoff, int yoff, uint8_t format_i,uint8_t format_j, int keyIndex, bool keyGroup[][15]){
+  int con = 0;
+
+  for(int j = 0; j < format_j; j++){
+    for(int i = 0; i <  format_i; i++){
+
+      lc.setLed(3-((i+xoff)/8),j+yoff,(i+xoff) % 8,keyGroup[keyIndex][con]);
+
+      con++;
+    }
+  }
+}
+
+void printPointerDyna(int xoff, int yoff, uint8_t format_i,uint8_t format_j, int keyIndex, bool keyGroup[][32]){
   int con = 0;
 
   for(int j = 0; j < format_j; j++){
