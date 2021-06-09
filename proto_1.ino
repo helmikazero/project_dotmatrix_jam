@@ -4,7 +4,7 @@
 
 LedControl lc = LedControl(12,11,10,4);
 
-int deAngka [10][15] = {
+bool deAngka [10][15] = {
     {
         1,1,1,
         1,0,1,
@@ -90,16 +90,18 @@ uint8_t year = 21;
 uint8_t flag = 1;
 bool date = false;
 
-int dig1; int dig2; int dig3; int dig4; int dig5; int dig6;
+uint8_t dig1; uint8_t dig2; uint8_t dig3; uint8_t dig4; uint8_t dig5; uint8_t dig6;
 
 
 unsigned long delayTime = 1;
 
 uint8_t secRate = 10;
 
-int button_[4] = {4,5,6,7};
+uint8_t button_[4] = {4,5,6,7};
+bool lastButtonState[4];
+bool currentButtonState[4];
 
-bool debugBool = true;
+bool debugBool = 1;
 
 void setup(){
   for (int i = 0; i < 4; i++){
@@ -110,17 +112,31 @@ void setup(){
 
   for(int i = 0; i < sizeof(button_); i++){
     pinMode(button_[i],INPUT_PULLUP);
+
+    currentButtonState[i] =digitalRead(button_[i]);
   }
 
 
 }
 
 void loop(){
+  for(int i = 0; i < sizeof(lastButtonState); i++){
+    lastButtonState[i] = currentButtonState[i];
+    currentButtonState[i] = digitalRead(button_[i]);
+  }
+
+  if(lastButtonState[0] == HIGH && currentButtonState[0] == LOW){
+    date = !date;
+  }
+
+
   if(digitalRead(button_[0]) == LOW){
     lc.setLed(3,0,0,true);
   }else{
     lc.setLed(3,0,0,false);
+    // date = false;
   }
+  
   
   Time2DigConvert();
   DisplayDig();
@@ -134,6 +150,8 @@ void loop(){
   }
 
   lc.setLed(3,0,1,debugBool);
+  lc.setLed(3,0,2,date);
+
 
   delay(delayTime);
 
@@ -268,7 +286,7 @@ void TimeFlow(){
   }
 }
 
-void printKeyOffset( int deviceIndex, int xoff, int yoff,int keyIndex, int keyGroup[][15]){
+void printKeyOffset( int deviceIndex, int xoff, int yoff,int keyIndex, bool keyGroup[][15]){
     int con = 0;
 
     for(int j = 0; j < 5; j++){
