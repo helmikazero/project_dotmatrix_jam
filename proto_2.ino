@@ -4,7 +4,8 @@
 
 LedControl lc = LedControl(12,11,10,4);
 
-bool deAngka [10][15] = {
+
+bool deAngka [12][15] = {
     {
         1,1,1,
         1,0,1,
@@ -74,6 +75,20 @@ bool deAngka [10][15] = {
         1,1,1,
         0,0,1,
         0,0,1  
+    },
+    {
+        0,0,0,
+        0,1,0,
+        0,0,0,
+        0,1,0,
+        0,0,0  
+    },
+    {
+        0,0,0,
+        0,0,0,
+        1,1,1,
+        0,0,0,
+        0,0,0  
     }
 };
 
@@ -92,10 +107,13 @@ bool date = false;
 
 uint8_t dig1; uint8_t dig2; uint8_t dig3; uint8_t dig4; uint8_t dig5; uint8_t dig6;
 
+uint8_t jamdig[6];
+uint8_t tgldig[6];
+
 
 unsigned long delayTime = 1;
 
-uint8_t secRate = 10;
+uint8_t secRate = 7;
 
 uint8_t button_[4] = {4,5,6,7};
 bool lastButtonState[4];
@@ -104,8 +122,9 @@ bool currentButtonState[4];
 bool debugBool = 1;
 
 int debugInt = 0;
-// int diz = 0;
-// int xoz = 0;
+
+uint8_t jam_x_pos[2] = {2,2};
+uint8_t tgl_x_pos[2] = {32,32};
 
 void setup(){
   for (int i = 0; i < 4; i++){
@@ -131,81 +150,79 @@ void loop(){
 
   if(lastButtonState[0] == HIGH && currentButtonState[0] == LOW){
     date = !date;
+    ClearAllDisplay();
   }
+  
 
-
-  if(digitalRead(button_[0]) == LOW){
-    lc.setLed(3,0,0,true);
-  }else{
-    lc.setLed(3,0,0,false);
-    // date = false;
-  }
+  
   
   
   Time2DigConvert();
-  DisplayDig();
+
+  
+  if(date){
+    DisplayDig(1,2,tgldig,11);
+  }else{
+    DisplayDig(1,2,jamdig,10);
+  }
 
   if(secRate > 0){
     secRate--;
+    lc.setLed(3-(secRate+12)/8,0,(secRate+12)%8,debugBool);
   }else{
-    secRate = 10;
-    debugBool = !debugBool;
+    secRate = 7;
     TimeFlow();
+    debugBool = !debugBool;
+    
   }
 
-  lc.setLed(3,0,1,debugBool);
-  lc.setLed(3,0,2,date);
-
-  // diz = debugInt / 8;
-  // xoz = debugInt % 8;
-  
-  // lc.setLed(3-debugInt/8,1,debugInt % 8,true);
-
-  // if(debugInt < 32){
-  //   debugInt++;
-  // }else{
-  //   debugInt = 0;
-  //   for(int i = 0; i < 8; i++){
-  //     lc.setLed(0,1,i,false);
-  //     lc.setLed(1,1,i,false);
-  //     lc.setLed(2,1,i,false);
-  //     lc.setLed(3,1,i,false);
-  //   }
-  // }
 
   delay(delayTime);
 
 }
 
+void ClearAllDisplay(){
+  lc.clearDisplay(0);
+  lc.clearDisplay(1);
+  lc.clearDisplay(2);
+  lc.clearDisplay(3);
+}
 
 void Time2DigConvert(){
-  if(date){
-    dig1 = (day/10)%10;
-    dig2 = day%10;
-    dig3 = (month/10)%10;
-    dig4 = month%10;
-    dig5 = (year/10)%10;
-    dig6 = year%10;
-  }else{
-    dig1 = (hour/10)%10;
-    dig2 = hour%10;
-    dig3 = (minute/10)%10;
-    dig4 = minute%10;
-    dig5 = (sec/10)%10;
-    dig6 = sec%10;
-  }
+
+
+  jamdig[0] = (hour/10)%10;
+  jamdig[1] = hour%10;
+  jamdig[2] = (minute/10)%10;
+  jamdig[3] = minute%10;
+  jamdig[4] = (sec/10)%10;
+  jamdig[5] = sec%10;
+
+  tgldig[0] = (day/10)%10;
+  tgldig[1] = day%10;
+  tgldig[2] = (month/10)%10;
+  tgldig[3] = month%10;
+  tgldig[4] = (year/10)%10;
+  tgldig[5] = year%10;
+
 }
 
-void DisplayDig(){
-  printKeyDyna(5,2,dig1,deAngka);
-  printKeyDyna(9,2,dig2,deAngka);
+
+void DisplayDig(uint8_t xl, uint8_t yl, uint8_t digMode[], uint8_t indenForm){
+  printKeyDyna(xl,yl,3,5,digMode[0],deAngka);
+  printKeyDyna(xl+4,yl,3,5,digMode[1],deAngka); //4
   
-  printKeyDyna(15,2,dig3,deAngka);
-  printKeyDyna(19,2,dig4,deAngka);
+  printKeyDyna(xl+8,yl,3,5,indenForm,deAngka);
 
-  printKeyDyna(25,2,dig5,deAngka);
-  printKeyDyna(29,2,dig6,deAngka);
+  printKeyDyna(xl+12,yl,3,5,digMode[2],deAngka); //10
+  printKeyDyna(xl+16,yl,3,5,digMode[3],deAngka); //14
+
+  printKeyDyna(xl+20,yl,3,5,indenForm,deAngka);
+
+  printKeyDyna(xl+24,yl,3,5,digMode[4],deAngka); //20
+  printKeyDyna(xl+28,yl,3,5,digMode[5],deAngka); //24
 }
+
 
 void TimeFlow(){
   sec = sec+1;
@@ -324,11 +341,11 @@ void printKeyOffset( int deviceIndex, int xoff, int yoff,int keyIndex, bool keyG
 
 }
 
-void printKeyDyna(int xoff, int yoff, int keyIndex, bool keyGroup[][15]){
+void printKeyDyna(int xoff, int yoff, uint8_t format_i,uint8_t format_j, int keyIndex, bool keyGroup[][15]){
   int con = 0;
 
-  for(int j = 0; j < 5; j++){
-    for(int i = 0; i < 3; i++){
+  for(int j = 0; j < format_j; j++){
+    for(int i = 0; i <  format_i; i++){
 
       lc.setLed(3-((i+xoff)/8),j+yoff,(i+xoff) % 8,keyGroup[keyIndex][con]);
 
