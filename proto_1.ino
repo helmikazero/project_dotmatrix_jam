@@ -275,7 +275,7 @@ void loop(){
 
   if(secRate > 0){
     secRate--;
-    lc.setLed(3-(secRate+12)/8,0,(secRate+12)%8,debugBool);
+    lc.setLed(3-(secRate+13)/8,0,(secRate+13)%8,debugBool);
   }else{
     secRate = 7;
     sec = sec+1;
