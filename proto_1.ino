@@ -115,7 +115,7 @@ uint8_t pointerLoc = 0;
 
 
 //jam
-uint8_t sec = 40; 
+uint8_t sec = 0; 
 uint8_t minute = 23; 
 uint8_t hour = 22;
  
@@ -149,6 +149,13 @@ int debugInt = 0;
 uint8_t jam_x_pos[2] = {2,2};
 uint8_t tgl_x_pos[2] = {32,32};
 
+//DELAY SELANG SELING JAM - TANGGAL
+uint8_t cleanStartSec = 10;
+
+uint8_t showDateTime[2] = {5,5};
+
+uint8_t showHourTime[2] = {15,15};
+
 void setup(){
   for (int i = 0; i < 4; i++){
       lc.shutdown(i,false);
@@ -171,38 +178,6 @@ void loop(){
     currentButtonState[i] = digitalRead(button_[i]);
   }
 
-  // if(lastButtonState[1] == HIGH && currentButtonState[1] == LOW){
-  //   changeMode = !changeMode;
-  // }
-
-  // if(digitalRead(button_[1]) == LOW){
-  //   lc.setLed(3,0,0,true);
-  //   if(changeHold > 0){
-  //     changeHold--;
-  //   }else{
-  //     changeMode = !changeMode;
-  //     changeHold = changeHoldMax;
-  //   }
-  // }else{
-  //   lc.setLed(3,0,0,false);
-  //   changeHold = changeHoldMax;
-  // }
-
-
-
-  // if(digitalRead(button_[0]) == LOW){
-  //   lc.setLed(3,0,0,true);
-  //   changeHold++;
-  // }else{
-  //   if(changeHold >= changeHoldThreshold){
-  //       changeMode = !changeMode;
-  //   }else if(changeHold > 0 && changeHold < changeHoldThreshold){
-  //     date = !date;
-  //     ClearAllDisplay();
-  //   }
-  //   changeHold = 0;
-  // }
-
   if(digitalRead(button_[0]) == LOW){
     lc.setLed(3,0,0,true);
     changeHold++;
@@ -211,7 +186,7 @@ void loop(){
       printPointerDyna(0,7,32,1,3,dePointer);
     }
   }else{
-    lc.setLed(3,0,0,true);
+    lc.setLed(3,0,0,false);
     if(changeHold >= changeHoldThreshold){
         changeMode = !changeMode;
     }else if(changeHold > 0 && changeHold < changeHoldThreshold){
@@ -304,7 +279,33 @@ void loop(){
   }else{
     secRate = 7;
     sec = sec+1;
-    
+
+    if(!changeMode){
+      if(sec >= cleanStartSec){
+        if(sec == 10){
+          date = true;
+        }
+        if(!date){
+          if(showHourTime[0] > 0){
+            showHourTime[0]--;
+          }else{
+            showHourTime[0] = showHourTime[1];
+            date = true;
+            ClearAllDisplay();
+          }
+        }else{
+          if(showDateTime[0] > 0){
+            showDateTime[0]--;
+          }else{
+            showDateTime[0] = showDateTime[1];
+            date = false;
+            ClearAllDisplay();
+          }
+        }
+      }else{
+        date = false;
+      }
+    }
 
     debugBool = !debugBool;
     
